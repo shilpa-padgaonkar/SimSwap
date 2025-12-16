@@ -1,4 +1,4 @@
-Feature: CAMARA sim swap subscriptions  API, v0.3.0
+Feature: CAMARA sim swap subscriptions  API, vwip
   # Input to be provided by the implementation to the tester
   #
   # Testing assets:
@@ -9,7 +9,7 @@ Feature: CAMARA sim swap subscriptions  API, v0.3.0
   # References to OAS spec schemas refer to schemas specified in sim-swap-subscriptions.yaml
 
   Background: Common subscriptions setup
-    Given the resource "/sim-swap-subscriptions/v0.3/subscriptions" as BaseURL
+    Given the resource "/sim-swap-subscriptions/vwip/subscriptions" as BaseURL
     And the header "Content-Type" is set to "application/json"
     And the header "Authorization" is set to a valid access token
     And the header "x-correlator" complies with the schema at "#/components/schemas/XCorrelator"
@@ -343,3 +343,4 @@ Feature: CAMARA sim swap subscriptions  API, v0.3.0
     Then the response property "$.status" is 422
     And the response property "$.code" is "MISSING_IDENTIFIER"
     And the response property "$.message" contains a user friendly text
+
