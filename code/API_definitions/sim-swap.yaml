@@ -28,12 +28,35 @@ info:
 
     The API provides 2 operations:
 
-    - POST retrieve-date : Provides timestamp of latest SIM swap, if any, for a given phone number.
+    - POST retrieve-date : Provides the following two flavors as responses:
+    
+      - Timestamp of latest SIM swap, if any, for a given phone number.
 
-      - If no swap has been performed and the network operator supports unlimited SimSwap monitoring timeframe, the API will return the SIM activation date (the timestamp of the first time that the SIM connected to the network).
+          - If no swap has been performed and the network operator supports unlimited SimSwap monitoring timeframe, the API will return the SIM activation date (the timestamp of the first time that the SIM connected to the network).
 
-      - If the latest SIM swap date (or the activation date if no SIM swap) cannot be communicated due to local regulations (or MNO internal privacy policies) preventing the safekeeping of the information for longer than the stated period, a `null` value will be returned. Optionally, a `monitoredPeriod` could be provided to indicate monitored time frame (in days) supported by the MNO. In this case the response must be treated as "there were no sim swap events during 'monitoredPeriod'. Either the parameter is optional, it is recommended to support it in SimSwap implementations.
+          - If the latest SIM swap date (or the activation date if no SIM swap) cannot be communicated due to local regulations (or MNO internal privacy policies) preventing the safekeeping of the information for longer than the stated period, a `null` value will be returned. Optionally, a `monitoredPeriod` could be provided to indicate monitored time frame (in days) supported by the MNO. In this case the response must be treated as "there were no sim swap events during 'monitoredPeriod'. Either the parameter is optional, it is recommended to support it in SimSwap implementations.
+ 
+      - SimSwapAgeBandEnum as a standardized recency bucket representing the elapsed time between the SIM activation/change date and the current time. The value maps the duration into fixed bands (0–14), ranging from 0 hours up to 3+ years.
 
+           - Standardized AgeBand enum mapping: <br>
+            0  = 0h ≤ d < 4h <br>
+            1  = 4h ≤ d < 12h <br>
+            2  = 12h ≤ d < 1d <br>
+            3  = 1d ≤ d < 2d <br>
+            4  = 2d ≤ d < 5d <br>
+            5  = 5d ≤ d < 7d <br>
+            6  = 7d ≤ d < 14d <br>
+            7  = 14d ≤ d < 30d <br>
+            8  = 30d ≤ d < 60d <br>
+            9  = 60d ≤ d < 90d <br>
+            10 = 90d ≤ d < 180d <br>
+            11 = 180d ≤ d < 1y <br>
+            12 = 1y ≤ d < 2y <br>
+            13 = 2y ≤ d < 3y <br>
+            14 = 3y+ <br>
+            111 = Change has not happened <br>
+            999 = Subscriber valid, but no real-time profile found <br>
+  
     - POST check: Checks if SIM swap has been performed during a past period (defined in the request with 'maxAge' attribute) for a given phone number.
 
       - Note: In the specification of the API the 'maxAge' could be between 1 hour to 2400 hours. If this delay is not managed due to the operator's own privacy threshold (which in theory would likely be linked to local regulations in the country) and a request is performed with a value inferior to 2400 but superior to operator policy, then,  an error `400 OUT_OF_RANGE `is expected with an explicit message to explain the limitation like `Check monitor period could not exceed local regulations (30 days)`.
@@ -134,6 +157,8 @@ paths:
                   $ref: "#/components/examples/RETRIEVE_MONITORED_PERIOD"
                 RETRIEVE_MONITORED_NULL:
                   $ref: "#/components/examples/RETRIEVE_MONITORED_NULL"
+                RETRIEVE_AGEBAND:
+                  $ref: "#/components/examples/RETRIEVE_AGEBAND"
         "400":
           $ref: "#/components/responses/Generic400"
         "401":
@@ -219,8 +244,9 @@ components:
       example: "b4333c46-49c0-4f62-80d7-f0ef930f1c46"
     SimSwapInfo:
       type: object
-      required:
-        - latestSimChange
+      oneOf:
+        - required: [latestSimChange]
+        - required: [simSwapAgeBand]
       properties:
         latestSimChange:
           type: string
@@ -232,6 +258,29 @@ components:
           type: integer
           description: Timeframe in days for SIM card change supervision for the phone number. It could be valued in the response if the latest SIM swap occurred before this monitored period.
           example: 120
+        simSwapAgeBand:
+          type: integer
+          description: Standardized recency bucket representing the elapsed time between the SIM activation/change date and the current time.
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+            - 10
+            - 11
+            - 12
+            - 13
+            - 14
+            - 111
+            - 999
+          nullable: true
+          example: 1       
     CheckSimSwapInfo:
       type: object
       required:
@@ -475,6 +524,10 @@ components:
       value:
         latestSimChange: null
         monitoredPeriod: 120
+    RETRIEVE_AGEBAND:
+      summary: SimSwap age band is sent back
+      value:
+        simSwapAgeBand: 1
     CHECK_2LEGS:
       summary: Check request without 3-legged access tokens
       value:
