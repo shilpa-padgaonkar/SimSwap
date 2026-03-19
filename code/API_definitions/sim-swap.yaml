@@ -29,13 +29,13 @@ info:
     The API provides 2 operations:
 
     - POST retrieve-date : Provides the following two flavors as responses:
-    
+
       - Timestamp of latest SIM swap, if any, for a given phone number.
 
           - If no swap has been performed and the network operator supports unlimited SimSwap monitoring timeframe, the API will return the SIM activation date (the timestamp of the first time that the SIM connected to the network).
 
           - If the latest SIM swap date (or the activation date if no SIM swap) cannot be communicated due to local regulations (or MNO internal privacy policies) preventing the safekeeping of the information for longer than the stated period, a `null` value will be returned. Optionally, a `monitoredPeriod` could be provided to indicate monitored time frame (in days) supported by the MNO. In this case the response must be treated as "there were no sim swap events during 'monitoredPeriod'. Either the parameter is optional, it is recommended to support it in SimSwap implementations.
- 
+
       - SimSwapAgeBandEnum as a standardized recency bucket representing the elapsed time between the SIM activation/change date and the current time. The value maps the duration into fixed bands (0–14), ranging from 0 hours up to 3+ years.
 
            - Standardized AgeBand enum mapping: <br>
@@ -56,7 +56,7 @@ info:
             14 = 3y+ <br>
             111 = Change has not happened <br>
             999 = Subscriber valid, but no real-time profile found <br>
-  
+
     - POST check: Checks if SIM swap has been performed during a past period (defined in the request with 'maxAge' attribute) for a given phone number.
 
       - Note: In the specification of the API the 'maxAge' could be between 1 hour to 2400 hours. If this delay is not managed due to the operator's own privacy threshold (which in theory would likely be linked to local regulations in the country) and a request is performed with a value inferior to 2400 but superior to operator policy, then,  an error `400 OUT_OF_RANGE `is expected with an explicit message to explain the limitation like `Check monitor period could not exceed local regulations (30 days)`.
@@ -280,7 +280,7 @@ components:
             - 111
             - 999
           nullable: true
-          example: 1       
+          example: 1
     CheckSimSwapInfo:
       type: object
       required:
